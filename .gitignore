@@ -6,10 +6,12 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Data
-data/
-*.tif
-*.nc
-*.jp2
+# Ignore full Milano dataset
+**/Milano_full/
+
+# Keep sample data
+!**/Milano_sample/
+!**/Milano_sample/**/*.tif
 
 # Environment
 .env/
