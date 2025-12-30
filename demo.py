@@ -14,7 +14,7 @@ def main():
     cfg.paths.data_dir = cfg.paths.project_root /"test"/ "data"
 
     # preprocess paths
-    cfg.paths.preprocess_input_raster_dir = cfg.paths.data_dir /"raw"/ "Raster"/"R10m_geotiff"/"Milano"
+    cfg.paths.preprocess_input_raster_dir = cfg.paths.data_dir /"raw"/ "Raster"/"Milano_sample"
     cfg.paths.preprocess_input_vector_path = cfg.paths.data_dir /"raw"/"Vector" / "ProvCM01012025_WGS84.shp"
     cfg.paths.preprocess_derived_dir = cfg.paths.data_dir /"derived"
     cfg.paths.preprocess_derived_dir.mkdir(parents=True, exist_ok=True)
@@ -41,7 +41,7 @@ def main():
     cfg.classify.export_labels_rgb = True   # save RGB visualization of labels
 
     # ROI settings
-    cfg.classify.use_roi = True # Select ROI to classify to avoid overload when the data is large
+    cfg.classify.use_roi = False # Select ROI to classify to avoid overload when the data is large
     cfg.classify.roi_window = (2000, 3024, 2000, 3024)  # 1024x1024, (row_start, row_end, col_start, col_end)
 
     # unsupervised classify parameters

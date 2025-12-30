@@ -17,7 +17,7 @@ from geosimpleclassify.core.geo_io import load_raster, load_raster_roi, save_ras
 from geosimpleclassify.core.feature import extract_pixel_features
 from geosimpleclassify.core.unsupervised import unsupervised_cluster
 from geosimpleclassify.core.supervised import supervised_classify
-from geosimpleclassify.core.postprocess import reshape_labels_to_raster, visualize, compare_and_save
+from geosimpleclassify.core.postprocess import reshape_labels_to_raster, visualize, compare_and_save, save_label_summary, plot_label_histogram
 from geosimpleclassify.config.schema import default_cfg, PipelineCfg
 
 
@@ -178,6 +178,26 @@ def run_classification(cfg: PipelineCfg):
     print("FAST_MODE:", cfg.classify.fast_mode)
     print("Saved:", init_out)
     print("Saved:", final_out)
+
+    # 7.5) save class summary (CSV) + histogram (PNG)
+    summary_csv = output_dir / "labels_final_summary.csv"
+    save_label_summary(
+        label_map=final_map,          
+        mask=mask,                    
+        transform=meta_cube["transform"],
+        out_csv_path=str(summary_csv),
+        nodata=cfg.classify.nodata_label,
+    )
+    print("Saved summary CSV:", summary_csv)
+
+    hist_png = output_dir / "labels_final_histogram.png"
+    plot_label_histogram(
+        summary_csv_path=str(summary_csv),
+        out_png_path=str(hist_png),
+        value_col="percent",          
+        title="Area proportion per class",
+    )
+    print("Saved histogram PNG:", hist_png)
 
     # 8) visualize
     roi_rgb = visualize(

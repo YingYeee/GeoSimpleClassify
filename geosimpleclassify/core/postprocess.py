@@ -1,6 +1,7 @@
 from __future__ import annotations
 import numpy as np
 import matplotlib.pyplot as plt
+import csv
 
 
 def reshape_labels_to_raster(
@@ -325,4 +326,110 @@ def compare_and_save(
 
     plt.tight_layout()
     plt.savefig(out_path, dpi=200, bbox_inches="tight")
+    plt.close()
+
+
+
+# -----------------------------------------------------------------------------
+# Added by YY
+# -----------------------------------------------------------------------------
+
+def save_label_summary(
+    label_map,
+    mask,
+    transform,
+    out_csv_path,
+    nodata=0,
+):
+    """
+    Save a class summary table (pixel counts, percentages, areas).
+
+    Parameters
+    ----------
+    label_map : ndarray (H,W)
+        Final label map (already includes label_offset; nodata typically 0).
+    mask : ndarray (H,W) of bool
+        Valid pixels mask aligned with label_map.
+    transform : affine.Affine
+        Geo-transform of the label_map (used to compute pixel area).
+    out_csv_path : str
+        Output CSV file path.
+    nodata : int
+        Nodata label value to exclude from statistics.
+    out_txt_path : str or None
+        Optional pretty text summary output path.
+    """
+    if label_map.shape != mask.shape:
+        raise ValueError(f"label_map shape {label_map.shape} != mask shape {mask.shape}")
+
+    # Count only valid pixels
+    vals = label_map[mask]
+
+    # Optionally exclude nodata if it could appear inside mask
+    vals = vals[vals != nodata]
+    if vals.size == 0:
+        raise ValueError("No valid (non-nodata) pixels to summarize.")
+
+    classes, counts = np.unique(vals, return_counts=True)
+    total = counts.sum()
+
+    # pixel area from affine transform: |a * e|
+    px_area_m2 = abs(transform.a * transform.e)
+
+    rows = []
+    for cls, cnt in zip(classes, counts):
+        pct = 100.0 * cnt / total
+        area_m2 = cnt * px_area_m2
+        area_km2 = area_m2 / 1e6
+        rows.append((int(cls), int(cnt), float(pct), float(area_m2), float(area_km2)))
+
+    # Write CSV
+    with open(out_csv_path, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["class_id", "pixel_count", "percent", "area_m2", "area_km2"])
+        for cls, cnt, pct, area_m2, area_km2 in rows:
+            w.writerow([cls, cnt, f"{pct:.4f}", f"{area_m2:.2f}", f"{area_km2:.6f}"])
+
+
+def plot_label_histogram(
+    summary_csv_path,
+    out_png_path,
+    value_col="percent",
+    title="Area proportion per class",
+):
+    """
+    Plot a simple bar chart from the summary CSV.
+
+    Parameters
+    ----------
+    summary_csv_path : str
+        CSV produced by save_label_summary.
+    out_png_path : str
+        Output PNG path.
+    value_col : {"percent","area_km2","pixel_count"}
+        Which metric to plot.
+    title : str
+        Figure title.
+    """
+    import csv
+
+    class_ids = []
+    values = []
+
+    with open(summary_csv_path, "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            class_ids.append(int(row["class_id"]))
+            if value_col == "pixel_count":
+                values.append(int(row["pixel_count"]))
+            else:
+                values.append(float(row[value_col]))
+
+    plt.figure(figsize=(6, 4))
+    plt.bar(class_ids, values)
+    plt.xlabel("Class ID")
+    plt.ylabel(value_col)
+    plt.title(title)
+    plt.xticks(class_ids)
+    plt.savefig(out_png_path, dpi=200, bbox_inches="tight")
     plt.close()
