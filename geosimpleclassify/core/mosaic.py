@@ -8,6 +8,26 @@ def merge_rasters(raster_paths, out_path=None):
     """
 
     src_files = [rasterio.open(p) for p in raster_paths]
+    ref = src_files[0]
+
+    for i, src in enumerate(src_files[1:], start=1):
+
+        # Check CRS
+        if src.crs != ref.crs:
+            raise ValueError(
+                f"CRS mismatch between raster[0] and raster[{i}]: "
+                f"{ref.crs} != {src.crs}"
+            )
+
+        # Check resolution (pixel size)
+        ref_res = (abs(ref.transform.a), abs(ref.transform.e))
+        src_res = (abs(src.transform.a), abs(src.transform.e))
+
+        if src_res != ref_res:
+            raise ValueError(
+                f"Resolution mismatch between raster[0] and raster[{i}]: "
+                f"{ref_res} != {src_res}"
+            )
 
     # mosaic: arr shape = (bands, H, W), transform = new affine
     mosaic_arr, mosaic_transform = merge(src_files)

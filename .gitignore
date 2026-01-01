@@ -1,21 +1,35 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
 
 # Jupyter
 .ipynb_checkpoints/
 
-# Data
-# Ignore full Milano dataset
-**/Milano_full/
-
-# Keep sample data
-!**/Milano_sample/
-!**/Milano_sample/**/*.tif
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
 
 # Environment
 .env/
+.env.*
 
-# macOS
-**/.DS_Store
+# External large datasets (not tracked)
+test/data/raw/Raster/Milano_full/
 
+# Generated pipeline data
+test/data/derived/
+test/data/final/
+
+# Notebook / demo outputs
+test/outputs/
+
+# Keep sample data
+!test/data/raw/
+!test/data/raw/Raster/
+!test/data/raw/Raster/Milano_sample/
+!test/data/raw/Raster/Milano_sample/**
+
+!test/data/raw/Vector/
+!test/data/raw/Vector/**
