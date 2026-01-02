@@ -19,7 +19,7 @@ def clip_raster_with_vector(
     # Load full vector layer (all features)
     gdf = gpd.read_file(vector_path)
 
-    # Optional attribute filter, e.g. attr_name="DEN_PROV", attr_value="Milano"
+    # Optional attribute filter, e.g. attr_name="DEN_CM", attr_value="Milano"
     if attr_name is not None and attr_value is not None:
         gdf = gdf[gdf[attr_name] == attr_value]
 
